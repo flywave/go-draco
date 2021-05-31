@@ -59,7 +59,7 @@ FLYWAVE_DRACO_API size_t
 draco_status_error_msg_length(const draco_status_t *status);
 
 FLYWAVE_DRACO_API size_t draco_status_error_msg(const draco_status_t *status,
-                                              char *msg, size_t length);
+                                                char *msg, size_t length);
 
 typedef struct _draco_point_attr_t draco_point_attr_t;
 
@@ -74,7 +74,8 @@ draco_point_data_type(const draco_point_attr_t *pa);
 FLYWAVE_DRACO_API int8_t
 draco_point_attr_num_components(const draco_point_attr_t *pa);
 
-FLYWAVE_DRACO_API bool draco_point_attr_normalized(const draco_point_attr_t *pa);
+FLYWAVE_DRACO_API bool
+draco_point_attr_normalized(const draco_point_attr_t *pa);
 
 FLYWAVE_DRACO_API int64_t
 draco_point_attr_byte_stride(const draco_point_attr_t *pa);
@@ -120,8 +121,8 @@ FLYWAVE_DRACO_API void draco_mesh_free(draco_mesh_t *mesh);
 FLYWAVE_DRACO_API uint32_t draco_mesh_num_faces(const draco_mesh_t *mesh);
 
 FLYWAVE_DRACO_API bool draco_mesh_get_indices(const draco_mesh_t *mesh,
-                                            const size_t out_size,
-                                            uint32_t *out_values);
+                                              const size_t out_size,
+                                              uint32_t *out_values);
 
 FLYWAVE_DRACO_API draco_encoded_geometry_type
 draco_get_encoded_geometry_type(const char *data, size_t data_size);
@@ -130,7 +131,7 @@ typedef struct _draco_decoder_t draco_decoder_t;
 
 FLYWAVE_DRACO_API draco_decoder_t *draco_new_decoder();
 
-FLYWAVE_DRACO_API void draco_free(draco_decoder_t *decoder);
+FLYWAVE_DRACO_API void draco_decoder_free(draco_decoder_t *decoder);
 
 FLYWAVE_DRACO_API draco_status_t *
 draco_decoder_decode_mesh(draco_decoder_t *decoder, const char *data,
@@ -139,6 +140,59 @@ draco_decoder_decode_mesh(draco_decoder_t *decoder, const char *data,
 FLYWAVE_DRACO_API draco_status_t *
 draco_decoder_decode_point_cloud(draco_decoder_t *decoder, const char *data,
                                  size_t data_size, draco_point_cloud_t *out_pc);
+
+typedef struct _draco_encoder_t draco_encoder_t;
+
+FLYWAVE_DRACO_API draco_encoder_t *draco_new_encoder();
+
+FLYWAVE_DRACO_API void draco_encoder_free(draco_encoder_t *encoder);
+
+FLYWAVE_DRACO_API void
+draco_encoder_set_attribute_quantization(draco_encoder_t *encoder, uint32_t att,
+                                         int bits);
+
+FLYWAVE_DRACO_API draco_status_t *
+draco_encoder_encode_mesh(draco_encoder_t *encoder, draco_mesh_t *in_mesh,
+                          char **out_data, size_t *data_size);
+
+FLYWAVE_DRACO_API draco_status_t *
+draco_encoder_encode_point_cloud(draco_encoder_t *encoder,
+                                 draco_point_cloud_t *in_pc, char **out_data,
+                                 size_t *data_size);
+
+typedef struct _draco_point_cloud_builder_t draco_point_cloud_builder_t;
+
+FLYWAVE_DRACO_API draco_point_cloud_builder_t *draco_new_point_cloud_builder();
+
+FLYWAVE_DRACO_API void
+draco_point_cloud_builder_free(draco_point_cloud_builder_t *builder);
+
+FLYWAVE_DRACO_API void
+draco_point_cloud_builder_start(draco_point_cloud_builder_t *builder, int size);
+
+FLYWAVE_DRACO_API draco_point_cloud_t *
+draco_point_cloud_builder_get(draco_point_cloud_builder_t *builder);
+
+FLYWAVE_DRACO_API int draco_point_cloud_set_attribute(
+    int num_points, draco_point_cloud_builder_t *builder, const void *src,
+    uint32_t att, int8_t ncomp, uint32_t dt);
+
+typedef struct _draco_mesh_builder_t draco_mesh_builder_t;
+
+FLYWAVE_DRACO_API draco_mesh_builder_t *draco_new_mesh_builder();
+
+FLYWAVE_DRACO_API void draco_mesh_builder_free(draco_mesh_builder_t *builder);
+
+FLYWAVE_DRACO_API void draco_mesh_builder_start(draco_mesh_builder_t *builder,
+                                                int size);
+
+FLYWAVE_DRACO_API int draco_mesh_set_attribute(int num_points,
+                                               draco_mesh_builder_t *builder,
+                                               const void *src, uint32_t att,
+                                               int8_t ncomp, uint32_t dt);
+
+FLYWAVE_DRACO_API draco_mesh_t *
+draco_mesh_builder_get(draco_mesh_builder_t *builder);
 
 #ifdef __cplusplus
 }

@@ -25,7 +25,7 @@ type Decoder struct {
 
 func (d *Decoder) free() {
 	if d.ref != nil {
-		C.draco_free(d.ref)
+		C.draco_decoder_free(d.ref)
 	}
 }
 

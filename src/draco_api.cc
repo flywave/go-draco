@@ -2,8 +2,11 @@
 
 #include "draco/attributes/point_attribute.h"
 #include "draco/compression/decode.h"
+#include "draco/compression/encode.h"
 #include "draco/mesh/mesh.h"
+#include "draco/mesh/triangle_soup_mesh_builder.h"
 #include "draco/point_cloud/point_cloud.h"
+#include "draco/point_cloud/point_cloud_builder.h"
 #include "draco_api.h"
 
 draco_encoded_geometry_type draco_get_encoded_geometry_type(const char *data,
@@ -17,7 +20,9 @@ draco_encoded_geometry_type draco_get_encoded_geometry_type(const char *data,
   return static_cast<draco_encoded_geometry_type>(type.value());
 }
 
-void draco_status_free(draco_status_t *status) { free(status); }
+void draco_status_free(draco_status_t *status) {
+  delete reinterpret_cast<draco::Status *>(status);
+}
 
 int draco_status_code(const draco_status_t *status) {
   return reinterpret_cast<const draco::Status *>(status)->code();
@@ -51,7 +56,9 @@ draco_decoder_t *draco_new_decoder() {
   return reinterpret_cast<draco_decoder_t *>(new draco::Decoder());
 }
 
-void draco_free(draco_decoder_t *decoder) { free(decoder); }
+void draco_decoder_free(draco_decoder_t *decoder) {
+  delete reinterpret_cast<draco::Decoder *>(decoder);
+}
 
 draco_status_t *draco_decoder_decode_mesh(draco_decoder_t *decoder,
                                           const char *data, size_t data_size,
@@ -82,14 +89,16 @@ draco_mesh_t *draco_new_mesh() {
   return reinterpret_cast<draco_mesh_t *>(new draco::Mesh());
 }
 
-void draco_mesh_free(draco_mesh_t *mesh) { free(mesh); }
+void draco_mesh_free(draco_mesh_t *mesh) {
+  delete reinterpret_cast<draco::Mesh *>(mesh);
+}
 
 uint32_t draco_mesh_num_faces(const draco_mesh_t *mesh) {
   return reinterpret_cast<const draco::Mesh *>(mesh)->num_faces();
 }
 
 bool get_triangles_array(const draco::Mesh *m, const size_t out_size,
-                       uint32_t *out_values) {
+                         uint32_t *out_values) {
   const uint32_t num_faces = m->num_faces();
   if (num_faces * 3 * sizeof(uint32_t) != out_size) {
     return false;
@@ -155,7 +164,9 @@ draco_point_cloud_t *draco_new_point_cloud() {
   return reinterpret_cast<draco_point_cloud_t *>(new draco::PointCloud());
 }
 
-void draco_point_cloud_free(draco_point_cloud_t *pc) { free(pc); }
+void draco_point_cloud_free(draco_point_cloud_t *pc) {
+  delete reinterpret_cast<draco::PointCloud *>(pc);
+}
 
 uint32_t draco_point_cloud_num_points(const draco_point_cloud_t *pc) {
   return reinterpret_cast<const draco::PointCloud *>(pc)->num_points();
@@ -229,10 +240,10 @@ static bool get_attribute_data_array_for_all_points(
 }
 
 bool draco_point_cloud_get_attribute_data(const draco_point_cloud_t *pc,
-                                         const draco_point_attr_t *pa,
-                                         draco_data_type data_type,
-                                         const size_t out_size,
-                                         void *out_values) {
+                                          const draco_point_attr_t *pa,
+                                          draco_data_type data_type,
+                                          const size_t out_size,
+                                          void *out_values) {
   auto pcc = reinterpret_cast<const draco::PointCloud *>(pc);
   auto pac = reinterpret_cast<const draco::PointAttribute *>(pa);
   switch (data_type) {
@@ -262,5 +273,295 @@ bool draco_point_cloud_get_attribute_data(const draco_point_cloud_t *pc,
         pcc, pac, draco::DT_FLOAT64, out_size, out_values);
   default:
     return false;
+  }
+}
+
+draco_encoder_t *draco_new_encoder() {
+  return reinterpret_cast<draco_encoder_t *>(new draco::Encoder());
+}
+
+void draco_encoder_free(draco_encoder_t *encoder) {
+  delete reinterpret_cast<draco::Encoder *>(encoder);
+}
+
+void draco_encoder_set_attribute_quantization(draco_encoder_t *encoder,
+                                              uint32_t att, int bits) {
+  draco::Encoder *enc = reinterpret_cast<draco::Encoder *>(encoder);
+  enc->SetAttributeQuantization(
+      static_cast<draco::GeometryAttribute::Type>(att), bits);
+}
+
+static draco::Status encode_to_buffer(draco::Encoder &encoder,
+                                      draco::Mesh *mesh,
+                                      draco::EncoderBuffer *buffer) {
+  return encoder.EncodeMeshToBuffer(*mesh, buffer);
+}
+
+static draco::Status encode_to_buffer(draco::Encoder &encoder,
+                                      draco::PointCloud *mesh,
+                                      draco::EncoderBuffer *buffer) {
+  return encoder.EncodePointCloudToBuffer(*mesh, buffer);
+}
+
+draco_status_t *draco_encoder_encode_mesh(draco_encoder_t *encoder,
+                                          draco_mesh_t *in_mesh,
+                                          char **out_data, size_t *data_size) {
+  draco::Encoder *enc = reinterpret_cast<draco::Encoder *>(encoder);
+  draco::Mesh *m = reinterpret_cast<draco::Mesh *>(in_mesh);
+  draco::EncoderBuffer buffer;
+
+  draco::Status status = encode_to_buffer(*enc, m, &buffer);
+  *out_data = (char *)malloc(static_cast<int>(buffer.size()));
+  if (*out_data) {
+    memcpy(*out_data, buffer.data(), buffer.size());
+    *data_size = static_cast<int>(buffer.size());
+  }
+  return reinterpret_cast<draco_status_t *>(new draco::Status(status));
+}
+
+draco_status_t *draco_encoder_encode_point_cloud(draco_encoder_t *encoder,
+                                                 draco_point_cloud_t *in_pc,
+                                                 char **out_data,
+                                                 size_t *data_size) {
+  draco::Encoder *enc = reinterpret_cast<draco::Encoder *>(encoder);
+  draco::PointCloud *pc = reinterpret_cast<draco::PointCloud *>(in_pc);
+
+  draco::EncoderBuffer buffer;
+
+  draco::Status status = encode_to_buffer(*enc, pc, &buffer);
+
+  *out_data = (char *)malloc(static_cast<int>(buffer.size()));
+  if (*out_data) {
+    memcpy(*out_data, buffer.data(), buffer.size());
+    *data_size = static_cast<int>(buffer.size());
+  }
+  return reinterpret_cast<draco_status_t *>(new draco::Status(status));
+}
+
+template <class T>
+int draco_set_mesh_attribute(int num_faces, draco::TriangleSoupMeshBuilder &mb,
+                             const T *src, draco::GeometryAttribute::Type att,
+                             int8_t ncomp, draco::DataType dt) {
+  int att_id = -1;
+  if (src) {
+    att_id = mb.AddAttribute(att, ncomp, dt);
+    for (int f = 0; f < num_faces; ++f, src += (3 * ncomp)) {
+      mb.SetAttributeValuesForFace(att_id, draco::FaceIndex(f), src, src + ncomp,
+                                   src + (2 * ncomp));
+    }
+  }
+  return att_id;
+};
+
+template <class T>
+int draco_set_mesh_attribute(int num_points, draco::PointCloudBuilder &pcb,
+                             const T *src, draco::GeometryAttribute::Type att,
+                             int8_t ncomp, draco::DataType dt) {
+  int att_id = -1;
+  if (src) {
+    att_id = pcb.AddAttribute(att, ncomp, dt);
+    for (draco::PointIndex i(0); i < num_points; ++i) {
+      pcb.SetAttributeValueForPoint(att_id, i, src + (i.value() * ncomp));
+    }
+  }
+  return att_id;
+}
+
+draco_point_cloud_builder_t *draco_new_point_cloud_builder() {
+  return reinterpret_cast<draco_point_cloud_builder_t *>(
+      new draco::PointCloudBuilder());
+}
+
+void draco_point_cloud_builder_free(draco_point_cloud_builder_t *builder) {
+  delete reinterpret_cast<draco::PointCloudBuilder *>(builder);
+}
+
+void draco_point_cloud_builder_start(draco_point_cloud_builder_t *builder,
+                                     int size) {
+  draco::PointCloudBuilder *b =
+      reinterpret_cast<draco::PointCloudBuilder *>(builder);
+  b->Start(size);
+}
+
+static std::unique_ptr<draco::Mesh>
+finalize_builder(draco::TriangleSoupMeshBuilder &builder) {
+  return builder.Finalize();
+}
+
+static std::unique_ptr<draco::PointCloud>
+finalize_builder(draco::PointCloudBuilder &builder) {
+  constexpr bool duplicate_points = false;
+  return builder.Finalize(duplicate_points);
+}
+
+draco_point_cloud_t *
+draco_point_cloud_builder_get(draco_point_cloud_builder_t *builder) {
+  draco::PointCloudBuilder *b =
+      reinterpret_cast<draco::PointCloudBuilder *>(builder);
+  return reinterpret_cast<draco_point_cloud_t *>(
+      finalize_builder(*b).release());
+}
+
+int draco_point_cloud_set_attribute(int num_points,
+                                    draco_point_cloud_builder_t *builder,
+                                    const void *src, uint32_t att, int8_t ncomp,
+                                    uint32_t dt) {
+  draco::PointCloudBuilder *b =
+      reinterpret_cast<draco::PointCloudBuilder *>(builder);
+  draco::DataType datatype = static_cast<draco::DataType>(dt);
+  draco::GeometryAttribute::Type attrtype =
+      static_cast<draco::GeometryAttribute::Type>(att);
+
+  switch (static_cast<draco::DataType>(dt)) {
+  case draco::DataType::DT_INT8:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const int8_t *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  case draco::DataType::DT_UINT8:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const uint8_t *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  case draco::DataType::DT_INT16:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const int16_t *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  case draco::DataType::DT_UINT16:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const uint16_t *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  case draco::DataType::DT_INT32:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const int32_t *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  case draco::DataType::DT_UINT32:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const uint32_t *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  case draco::DataType::DT_INT64:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const int64_t *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  case draco::DataType::DT_UINT64:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const uint64_t *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  case draco::DataType::DT_FLOAT32:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const float *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  case draco::DataType::DT_FLOAT64:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const double *>(src), attrtype,
+                             ncomp, datatype);
+
+    break;
+  case draco::DataType::DT_BOOL:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const bool *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  default:
+    break;
+  }
+}
+
+draco_mesh_builder_t *draco_new_mesh_builder() {
+  return reinterpret_cast<draco_mesh_builder_t *>(
+      new draco::TriangleSoupMeshBuilder());
+}
+
+void draco_mesh_builder_free(draco_mesh_builder_t *builder) {
+  delete reinterpret_cast<draco::TriangleSoupMeshBuilder *>(builder);
+}
+
+void draco_mesh_builder_start(draco_mesh_builder_t *builder, int size) {
+  draco::TriangleSoupMeshBuilder *b =
+      reinterpret_cast<draco::TriangleSoupMeshBuilder *>(builder);
+  b->Start(size);
+}
+
+draco_mesh_t *draco_mesh_builder_get(draco_mesh_builder_t *builder) {
+  draco::TriangleSoupMeshBuilder *b =
+      reinterpret_cast<draco::TriangleSoupMeshBuilder *>(builder);
+  return reinterpret_cast<draco_mesh_t *>(finalize_builder(*b).release());
+}
+
+int draco_mesh_set_attribute(int num_points, draco_mesh_builder_t *builder,
+                             const void *src, uint32_t att, int8_t ncomp,
+                             uint32_t dt) {
+  draco::TriangleSoupMeshBuilder *b =
+      reinterpret_cast<draco::TriangleSoupMeshBuilder *>(builder);
+  draco::DataType datatype = static_cast<draco::DataType>(dt);
+  draco::GeometryAttribute::Type attrtype =
+      static_cast<draco::GeometryAttribute::Type>(att);
+
+  switch (static_cast<draco::DataType>(dt)) {
+  case draco::DataType::DT_INT8:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const int8_t *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  case draco::DataType::DT_UINT8:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const uint8_t *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  case draco::DataType::DT_INT16:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const int16_t *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  case draco::DataType::DT_UINT16:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const uint16_t *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  case draco::DataType::DT_INT32:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const int32_t *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  case draco::DataType::DT_UINT32:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const uint32_t *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  case draco::DataType::DT_INT64:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const int64_t *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  case draco::DataType::DT_UINT64:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const uint64_t *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  case draco::DataType::DT_FLOAT32:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const float *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  case draco::DataType::DT_FLOAT64:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const double *>(src), attrtype,
+                             ncomp, datatype);
+
+    break;
+  case draco::DataType::DT_BOOL:
+    draco_set_mesh_attribute(num_points, *b,
+                             reinterpret_cast<const bool *>(src), attrtype,
+                             ncomp, datatype);
+    break;
+  default:
+    break;
   }
 }
