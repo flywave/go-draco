@@ -55,7 +55,7 @@ func (dt DataType) Size() uint32 {
 	case DT_INT64, DT_UINT64, DT_FLOAT64:
 		return 8
 	default:
-		panic("draco-go: unsupported data type")
+		panic("go-draco: unsupported data type")
 	}
 }
 
@@ -84,7 +84,7 @@ func (dt DataType) goType() reflect.Type {
 	case DT_FLOAT64:
 		return reflect.TypeOf((*float64)(nil)).Elem()
 	default:
-		panic("draco-go: unsupported data type")
+		panic("go-draco: unsupported data type")
 	}
 }
 

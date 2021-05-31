@@ -65,7 +65,7 @@ func (pc *PointCloud) AttrData(pa *PointAttr, buffer interface{}) (interface{}, 
 			buffer = reflect.MakeSlice(reflect.SliceOf(dt.goType()), int(n), int(n)).Interface()
 		}
 		if v.Kind() != reflect.Slice {
-			panic(fmt.Sprintf("draco-go: expecting a slice but got %s", v.Kind()))
+			panic(fmt.Sprintf("go-draco: expecting a slice but got %s", v.Kind()))
 		}
 		l := v.Len()
 		switch buffer.(type) {
@@ -90,7 +90,7 @@ func (pc *PointCloud) AttrData(pa *PointAttr, buffer interface{}) (interface{}, 
 		case []float64:
 			dt = DT_FLOAT64
 		default:
-			panic("draco-go: unsupported data type")
+			panic("go-draco: unsupported data type")
 		}
 		if l < int(n) {
 			tmp := reflect.MakeSlice(reflect.SliceOf(dt.goType()), int(n)-l, int(n)-l).Interface()
