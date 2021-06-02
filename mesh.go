@@ -29,9 +29,9 @@ func (m *Mesh) NumFaces() uint32 {
 
 func (m *Mesh) Faces(buffer []uint32) []uint32 {
 	n := m.NumFaces()
-	if len(buffer) < int(n) {
+	if len(buffer) < int(n*3) {
 		buffer = append(buffer, make([]uint32, int(n)-len(buffer))...)
 	}
 	C.draco_mesh_get_indices(m.ref, C.size_t(n*3*4), (*C.uint32_t)(unsafe.Pointer(&buffer[0])))
-	return buffer[:n]
+	return buffer[:n*3]
 }

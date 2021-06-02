@@ -1,6 +1,7 @@
 package draco
 
 import (
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -204,5 +205,33 @@ func TestEncoderDecoder(t *testing.T) {
 
 	if len(buf) == 0 {
 		t.FailNow()
+	}
+
+	denc := NewDecoder()
+	outmesh := NewMesh()
+
+	err := denc.DecodeMesh(outmesh, buf)
+
+	if err != nil {
+		t.FailNow()
+	}
+	var facecount int
+	if facecount = int(outmesh.NumFaces()); facecount != len(Faces) {
+		t.FailNow()
+	}
+
+	outface := make([]uint32, facecount*3)
+	outface = outmesh.Faces(outface)
+
+	vertcount := outmesh.NumPoints()
+	outvert := make([]float32, vertcount*3)
+
+	posid := outmesh.NamedAttributeID(GAT_POSITION)
+	outmesh.AttrData(outmesh.Attr(posid), outvert)
+
+	for f := 0; f < facecount; f++ {
+		for i := 0; i < 3; i++ {
+			fmt.Printf("[%f, %f, %f]", outvert[outface[f*3+i]*3], outvert[outface[f*3+i]*3+1], outvert[outface[f*3+i]*3+2])
+		}
 	}
 }

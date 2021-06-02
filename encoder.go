@@ -45,7 +45,7 @@ func (d *Encoder) EncodeMesh(m *Mesh) (error, []byte) {
 	bufHeader.Data = uintptr(unsafe.Pointer(data))
 
 	ret := make([]byte, int(size))
-	copy(bufSlice, ret)
+	copy(ret, bufSlice)
 	return newError(s), ret
 }
 
