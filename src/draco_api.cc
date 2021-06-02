@@ -346,8 +346,8 @@ int draco_set_mesh_attribute(int num_faces, draco::TriangleSoupMeshBuilder &mb,
   if (src) {
     att_id = mb.AddAttribute(att, ncomp, dt);
     for (int f = 0; f < num_faces; ++f, src += (3 * ncomp)) {
-      mb.SetAttributeValuesForFace(att_id, draco::FaceIndex(f), src, src + ncomp,
-                                   src + (2 * ncomp));
+      mb.SetAttributeValuesForFace(att_id, draco::FaceIndex(f), src,
+                                   src + ncomp, src + (2 * ncomp));
     }
   }
   return att_id;
@@ -411,67 +411,68 @@ int draco_point_cloud_set_attribute(int num_points,
   draco::DataType datatype = static_cast<draco::DataType>(dt);
   draco::GeometryAttribute::Type attrtype =
       static_cast<draco::GeometryAttribute::Type>(att);
-
+  int ret = 0;
   switch (static_cast<draco::DataType>(dt)) {
   case draco::DataType::DT_INT8:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const int8_t *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const int8_t *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   case draco::DataType::DT_UINT8:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const uint8_t *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const uint8_t *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   case draco::DataType::DT_INT16:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const int16_t *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const int16_t *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   case draco::DataType::DT_UINT16:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const uint16_t *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const uint16_t *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   case draco::DataType::DT_INT32:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const int32_t *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const int32_t *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   case draco::DataType::DT_UINT32:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const uint32_t *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const uint32_t *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   case draco::DataType::DT_INT64:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const int64_t *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const int64_t *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   case draco::DataType::DT_UINT64:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const uint64_t *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const uint64_t *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   case draco::DataType::DT_FLOAT32:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const float *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const float *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   case draco::DataType::DT_FLOAT64:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const double *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const double *>(src),
+                                   attrtype, ncomp, datatype);
 
     break;
   case draco::DataType::DT_BOOL:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const bool *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const bool *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   default:
     break;
   }
+  return ret;
 }
 
 draco_mesh_builder_t *draco_new_mesh_builder() {
@@ -503,65 +504,67 @@ int draco_mesh_set_attribute(int num_points, draco_mesh_builder_t *builder,
   draco::DataType datatype = static_cast<draco::DataType>(dt);
   draco::GeometryAttribute::Type attrtype =
       static_cast<draco::GeometryAttribute::Type>(att);
+  int ret = 0;
 
   switch (static_cast<draco::DataType>(dt)) {
   case draco::DataType::DT_INT8:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const int8_t *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const int8_t *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   case draco::DataType::DT_UINT8:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const uint8_t *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const uint8_t *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   case draco::DataType::DT_INT16:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const int16_t *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const int16_t *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   case draco::DataType::DT_UINT16:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const uint16_t *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const uint16_t *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   case draco::DataType::DT_INT32:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const int32_t *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const int32_t *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   case draco::DataType::DT_UINT32:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const uint32_t *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const uint32_t *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   case draco::DataType::DT_INT64:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const int64_t *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const int64_t *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   case draco::DataType::DT_UINT64:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const uint64_t *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const uint64_t *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   case draco::DataType::DT_FLOAT32:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const float *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const float *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   case draco::DataType::DT_FLOAT64:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const double *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const double *>(src),
+                                   attrtype, ncomp, datatype);
 
     break;
   case draco::DataType::DT_BOOL:
-    draco_set_mesh_attribute(num_points, *b,
-                             reinterpret_cast<const bool *>(src), attrtype,
-                             ncomp, datatype);
+    ret = draco_set_mesh_attribute(num_points, *b,
+                                   reinterpret_cast<const bool *>(src),
+                                   attrtype, ncomp, datatype);
     break;
   default:
     break;
   }
+  return ret;
 }

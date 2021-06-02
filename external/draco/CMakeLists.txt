@@ -625,7 +625,7 @@ list(APPEND draco_maya_plug_sources
       draco_points_enc)
 
   draco_add_library(NAME
-                      draco_static
+                      draco
                       OUTPUT_NAME
                       draco
                       TYPE
@@ -663,7 +663,7 @@ SET_TARGET_PROPERTIES(draco_animation_enc PROPERTIES FOLDER external/draco)
 SET_TARGET_PROPERTIES(draco_point_cloud PROPERTIES FOLDER external/draco)
 SET_TARGET_PROPERTIES(draco_points_dec PROPERTIES FOLDER external/draco)
 SET_TARGET_PROPERTIES(draco_points_enc PROPERTIES FOLDER external/draco)
-SET_TARGET_PROPERTIES(draco_static PROPERTIES FOLDER external/draco)
+SET_TARGET_PROPERTIES(draco PROPERTIES FOLDER external/draco)
 SET_TARGET_PROPERTIES(draco_compression_attributes_pred_schemes_enc PROPERTIES FOLDER external/draco)
 SET_TARGET_PROPERTIES(draco_compression_attributes_pred_schemes_dec PROPERTIES FOLDER external/draco)
 SET_TARGET_PROPERTIES(draco_compression_mesh_traverser PROPERTIES FOLDER external/draco)

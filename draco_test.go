@@ -197,7 +197,7 @@ func TestEncoderDecoder(t *testing.T) {
 	builder.Start(size)
 
 	builder.SetAttribute(size, Verts[:], GAT_POSITION)
-	builder.SetAttribute(size, Texcoords[:], GAT_COLOR)
+	builder.SetAttribute(size, Texcoords[:], GAT_TEX_COORD)
 
 	mesh := builder.GetMesh()
 	_, buf := enc.EncodeMesh(mesh)
