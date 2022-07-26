@@ -3,7 +3,6 @@ package draco
 // #include "draco_api.h"
 import "C"
 import (
-	"runtime"
 	"unsafe"
 
 	"github.com/flywave/go3d/vec2"
@@ -19,7 +18,7 @@ type MeshBuilder struct {
 	ref *C.struct__draco_mesh_builder_t
 }
 
-func (m *MeshBuilder) free() {
+func (m *MeshBuilder) Free() {
 	if m.ref != nil {
 		C.draco_mesh_builder_free(m.ref)
 	}
@@ -27,7 +26,7 @@ func (m *MeshBuilder) free() {
 
 func NewMeshBuilder() *MeshBuilder {
 	m := &MeshBuilder{ref: C.draco_new_mesh_builder()}
-	runtime.SetFinalizer(m, (*MeshBuilder).free)
+	// runtime.SetFinalizer(m, (*MeshBuilder).free)
 	return m
 }
 
@@ -247,6 +246,6 @@ func (m *MeshBuilder) SetAttribute(numPoints int, src interface{}, att GeometryA
 
 func (m *MeshBuilder) GetMesh() *Mesh {
 	mesh := &Mesh{PointCloud{ref: C.draco_mesh_builder_get(m.ref)}}
-	runtime.SetFinalizer(mesh, (*Mesh).free)
+	// runtime.SetFinalizer(mesh, (*Mesh).free)
 	return mesh
 }
