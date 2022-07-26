@@ -3,10 +3,12 @@ package draco
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/flywave/go3d/vec2"
 	"github.com/flywave/go3d/vec3"
+	"github.com/qmuntal/gltf"
 )
 
 func TestDecode_Error(t *testing.T) {
@@ -136,6 +138,7 @@ var (
 		{0., 1., 1.},
 		{0., 0., 1.},
 		{0., 1., 0.}}
+
 	Faces = [][3]uint16{
 		{0, 1, 2},
 		{3, 4, 5},
@@ -193,12 +196,12 @@ var (
 func TestEncoderDecoder(t *testing.T) {
 	enc := NewEncoder()
 	builder := NewMeshBuilder()
-	size := len(Faces)
+	size := len(Verts) / 3
 
 	builder.Start(size)
 
 	builder.SetAttribute(size, Verts[:], GAT_POSITION)
-	builder.SetAttribute(size, Texcoords[:], GAT_TEX_COORD)
+	// builder.SetAttribute(size, Texcoords[:], GAT_TEX_COORD)
 
 	mesh := builder.GetMesh()
 	_, buf := enc.EncodeMesh(mesh)
@@ -216,10 +219,46 @@ func TestEncoderDecoder(t *testing.T) {
 		t.FailNow()
 	}
 	var facecount int
-	if facecount = int(outmesh.NumFaces()); facecount != len(Faces) {
+	if facecount = int(outmesh.NumFaces()); facecount != size {
 		t.FailNow()
 	}
 
+	outface := make([]uint32, size*3)
+	outface = outmesh.Faces(outface)
+
+	vertcount := outmesh.NumPoints()
+	outvert := make([]float32, vertcount*3)
+
+	posid := outmesh.NamedAttributeID(GAT_POSITION)
+	outmesh.AttrData(outmesh.Attr(posid), outvert)
+
+	// faceTemp := "f %d/%d %d/%d %d/%d \n"
+	faceTemp2 := "f %d %d %d \n"
+	vertTmp := "v %f %f %f \n"
+	// uvTmp := "vt %f %f \n"
+
+	fl, _ := os.Create("testdata/test.obj")
+	for i := 0; i < len(outvert); i += 3 {
+		fl.Write([]byte(fmt.Sprintf(vertTmp, outvert[i+0], outvert[i+1], outvert[i+2])))
+	}
+	for i := 0; i < len(outface); i += 3 {
+		fl.Write([]byte(fmt.Sprintf(faceTemp2, outface[i]+1, outface[i+1]+1, outface[i+2]+1)))
+	}
+	fl.Close()
+}
+
+func TestDecoderDecoder(t *testing.T) {
+	g, err := gltf.Open("./testdata/0-0.glb")
+	bw := g.BufferViews[0]
+	buf := g.Buffers[bw.Buffer].Data[bw.ByteOffset:bw.ByteLength]
+	outmesh := NewMesh()
+
+	denc := NewDecoder()
+	err = denc.DecodeMesh(outmesh, buf)
+	if err != nil {
+		t.FailNow()
+	}
+	facecount := int(outmesh.NumFaces())
 	outface := make([]uint32, facecount*3)
 	outface = outmesh.Faces(outface)
 
@@ -229,9 +268,26 @@ func TestEncoderDecoder(t *testing.T) {
 	posid := outmesh.NamedAttributeID(GAT_POSITION)
 	outmesh.AttrData(outmesh.Attr(posid), outvert)
 
-	for f := 0; f < facecount; f++ {
-		for i := 0; i < 3; i++ {
-			fmt.Printf("[%f, %f, %f]", outvert[outface[f*3+i]*3], outvert[outface[f*3+i]*3+1], outvert[outface[f*3+i]*3+2])
-		}
+	outNl := make([]float32, vertcount*3)
+	posid = outmesh.NamedAttributeID(GAT_NORMAL)
+	outmesh.AttrData(outmesh.Attr(posid), outNl)
+
+	outTex := make([]float32, vertcount*2)
+	posid = outmesh.NamedAttributeID(GAT_TEX_COORD)
+	outmesh.AttrData(outmesh.Attr(posid), outTex)
+
+	// faceTemp := "f %d/%d %d/%d %d/%d \n"
+	faceTemp2 := "f %d %d %d \n"
+	vertTmp := "v %f %f %f \n"
+	// uvTmp := "vt %f %f \n"
+
+	fl, _ := os.Create("testdata/test.obj")
+	for i := 0; i < len(outvert); i += 3 {
+		fl.Write([]byte(fmt.Sprintf(vertTmp, outvert[i+0], outvert[i+1], outvert[i+2])))
 	}
+	for i := 0; i < len(outface); i += 3 {
+		fl.Write([]byte(fmt.Sprintf(faceTemp2, outface[i]+1, outface[i+1]+1, outface[i+2]+1)))
+	}
+	fl.Close()
+
 }
