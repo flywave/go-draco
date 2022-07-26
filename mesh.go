@@ -13,6 +13,7 @@ type Mesh struct {
 func (m *Mesh) Free() {
 	if m.ref != nil {
 		C.draco_mesh_free(m.ref)
+		m.ref = nil
 	}
 }
 

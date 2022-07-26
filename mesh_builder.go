@@ -21,6 +21,7 @@ type MeshBuilder struct {
 func (m *MeshBuilder) Free() {
 	if m.ref != nil {
 		C.draco_mesh_builder_free(m.ref)
+		m.ref = nil
 	}
 }
 
