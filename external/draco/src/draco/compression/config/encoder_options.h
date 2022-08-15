@@ -37,7 +37,7 @@ class EncoderOptionsBase : public DracoOptions<AttributeKeyT> {
     options.SetSupportedFeature(features::kPredictiveEdgebreaker, true);
 #endif
     options.SetAttributeInt(GeometryAttribute::POSITION, "quantization_bits",
-                            14);
+                            16);
     options.SetAttributeInt(GeometryAttribute::NORMAL, "quantization_bits", 10);
     options.SetAttributeInt(GeometryAttribute::TEX_COORD, "quantization_bits",
                             12);
