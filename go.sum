@@ -1,7 +1,7 @@
-github.com/barnex/fmath v0.0.0-20150108074215-ec9671f295c2 h1:FOAZHSIFEhocAOfB7LQcZmCEAra7hneHMBPL8Nq/eDk=
-github.com/barnex/fmath v0.0.0-20150108074215-ec9671f295c2/go.mod h1:G7XW+2O6Hk/x6OP8AuwZjI8ZTyXvKDTTKaRK92gapfk=
-github.com/flywave/go3d v0.0.0-20210529142521-14eb5aca1290 h1:d/Quyfh7G/2QqZzsNsZTbgA5c5hUwngwVoGTmj/43BU=
-github.com/flywave/go3d v0.0.0-20210529142521-14eb5aca1290/go.mod h1:QbQZlarSgCPYFAmoTduiDUd4JCnolimXUswTAnSrFWY=
+github.com/flywave/go3d v0.0.0-20240109050628-b891a10fca74 h1:xzseEax2cw2J5r6IRgd4MQ/XQJXW7vnEoeBvwwCwg1Q=
+github.com/flywave/go3d v0.0.0-20240109050628-b891a10fca74/go.mod h1:bvblxPT+cF0zgDi71CuusPPWCwqU0SikE9ySl2NzeQw=
+github.com/flywave/go3d v0.0.0-20250314015505-bf0fda02e242 h1:XU3CfYUCsQoAlTGMmbIWwUc7h4oPP6f7BjzffaObwP8=
+github.com/flywave/go3d v0.0.0-20250314015505-bf0fda02e242/go.mod h1:bvblxPT+cF0zgDi71CuusPPWCwqU0SikE9ySl2NzeQw=
 github.com/go-test/deep v1.0.1 h1:UQhStjbkDClarlmv0am7OXXO4/GaPdCGiUiMTvi28sg=
 github.com/go-test/deep v1.0.1/go.mod h1:wGDj63lr65AM2AQyKZd/NYHGb0R+1RLqB8NKt3aSFNA=
 github.com/qmuntal/gltf v0.22.1 h1:SzH/OQJa04iYOlJQTG/3aqnuj6GGGtOqX2Wi55q3+dw=
