@@ -1,8 +1,8 @@
 module github.com/flywave/go-draco
 
-go 1.12
+go 1.23.7
 
 require (
-	github.com/flywave/go3d v0.0.0-20210529142521-14eb5aca1290
-	github.com/qmuntal/gltf v0.22.1
+	github.com/flywave/gltf v0.20.4-0.20250411080706-f58af20d5f38
+	github.com/flywave/go3d v0.0.0-20250314015505-bf0fda02e242
 )
