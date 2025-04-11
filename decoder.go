@@ -7,8 +7,8 @@ package draco
 // #cgo CXXFLAGS: -I ./lib
 // #cgo linux LDFLAGS:  -L ./lib/linux -Wl,--start-group  -lstdc++ -lm -pthread -ldraco -lc_draco -Wl,--end-group
 // #cgo windows LDFLAGS: -L ./lib/windows  -Wl,--start-group  -lstdc++  -ldraco -lc_draco -Wl,--end-group
-// #cgo darwin LDFLAGS: -L　./lib/darwin -ldraco -lc_draco
-// #cgo darwin,arm LDFLAGS: -L　./lib/darwin_arm -ldraco -lc_draco
+// #cgo darwin,amd64 LDFLAGS: -L　./lib/darwin -ldraco -lc_draco -lc++
+// #cgo darwin,arm64 LDFLAGS: -L　./lib/darwin_arm -ldraco -lc_draco -lc++
 import "C"
 import (
 	"runtime"
