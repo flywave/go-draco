@@ -3,8 +3,8 @@ package draco
 // #include <stdlib.h>
 // #include <string.h>
 // #include "draco_api.h"
-// #cgo CFLAGS: -I ./lib
-// #cgo CXXFLAGS: -I ./lib
+// #cgo CFLAGS: -I ./libs
+// #cgo CXXFLAGS: -I ./libs
 import "C"
 import (
 	"reflect"
