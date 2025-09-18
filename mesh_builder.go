@@ -3,6 +3,7 @@ package draco
 // #include "draco_api.h"
 import "C"
 import (
+	"runtime"
 	"unsafe"
 
 	"github.com/flywave/go3d/vec2"
@@ -14,25 +15,29 @@ import (
 	vec4d "github.com/flywave/go3d/float64/vec4"
 )
 
-type MeshBuilder struct {
+type innerMeshBuilder struct {
 	ref *C.struct__draco_mesh_builder_t
 }
 
-func (m *MeshBuilder) Free() {
+func (m *innerMeshBuilder) free() {
 	if m.ref != nil {
 		C.draco_mesh_builder_free(m.ref)
 		m.ref = nil
 	}
 }
 
+type MeshBuilder struct {
+	inner *innerMeshBuilder
+}
+
 func NewMeshBuilder() *MeshBuilder {
-	m := &MeshBuilder{ref: C.draco_new_mesh_builder()}
-	// runtime.SetFinalizer(m, (*MeshBuilder).free)
+	m := &MeshBuilder{inner: &innerMeshBuilder{ref: C.draco_new_mesh_builder()}}
+	runtime.SetFinalizer(m.inner, (*innerMeshBuilder).free)
 	return m
 }
 
 func (m *MeshBuilder) Start(size int) {
-	C.draco_mesh_builder_start(m.ref, C.int(size))
+	C.draco_mesh_builder_start(m.inner.ref, C.int(size))
 }
 
 func (m *MeshBuilder) SetAttribute(numPoints int, src interface{}, att GeometryAttrType) uint32 {
@@ -241,12 +246,12 @@ func (m *MeshBuilder) SetAttribute(numPoints int, src interface{}, att GeometryA
 		dt = DT_BOOL
 		pt = unsafe.Pointer(&data[0])
 	}
-	attr_id := C.draco_mesh_set_attribute(C.int(numPoints), m.ref, pt, C.uint(att), C.schar(ncomp), C.uint(dt))
+	attr_id := C.draco_mesh_set_attribute(C.int(numPoints), m.inner.ref, pt, C.uint(att), C.schar(ncomp), C.uint(dt))
 	return uint32(attr_id)
 }
 
 func (m *MeshBuilder) GetMesh() *Mesh {
-	mesh := &Mesh{PointCloud{ref: C.draco_mesh_builder_get(m.ref)}}
-	// runtime.SetFinalizer(mesh, (*Mesh).free)
+	mesh := &Mesh{PointCloud{inner: &innerPointCloud{ref: C.draco_mesh_builder_get(m.inner.ref)}}}
+	runtime.SetFinalizer(mesh.inner, (*innerPointCloud).free)
 	return mesh
 }

@@ -36,7 +36,7 @@ func (d *Encoder) EncodeMesh(m *Mesh) (error, []byte) {
 	var data *C.char
 	var size C.size_t
 	defer C.free(unsafe.Pointer(data))
-	s := C.draco_encoder_encode_mesh(d.ref, m.ref, &data, &size)
+	s := C.draco_encoder_encode_mesh(d.ref, m.inner.ref, &data, &size)
 
 	var bufSlice []byte
 	bufHeader := (*reflect.SliceHeader)((unsafe.Pointer(&bufSlice)))
@@ -53,7 +53,7 @@ func (d *Encoder) EncodePointCloud(pc *PointCloud) (error, []byte) {
 	var data *C.char
 	var size C.size_t
 	defer C.free(unsafe.Pointer(data))
-	s := C.draco_encoder_encode_point_cloud(d.ref, pc.ref, &data, &size)
+	s := C.draco_encoder_encode_point_cloud(d.ref, pc.inner.ref, &data, &size)
 
 	var bufSlice []byte
 	bufHeader := (*reflect.SliceHeader)((unsafe.Pointer(&bufSlice)))

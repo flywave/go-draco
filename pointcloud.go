@@ -9,32 +9,36 @@ import (
 	"unsafe"
 )
 
-type PointCloud struct {
+type innerPointCloud struct {
 	ref *C.struct__draco_point_cloud_t
 }
 
-func (pc *PointCloud) free() {
+func (pc *innerPointCloud) free() {
 	if pc.ref != nil {
 		C.draco_point_cloud_free(pc.ref)
 	}
 }
 
+type PointCloud struct {
+	inner *innerPointCloud
+}
+
 func NewPointCloud() *PointCloud {
-	pc := &PointCloud{C.draco_new_point_cloud()}
-	runtime.SetFinalizer(pc, (*PointCloud).free)
+	pc := &PointCloud{inner: &innerPointCloud{ref: C.draco_new_point_cloud()}}
+	runtime.SetFinalizer(pc.inner, (*innerPointCloud).free)
 	return pc
 }
 
 func (pc *PointCloud) NumPoints() uint32 {
-	return uint32(C.draco_point_cloud_num_points(pc.ref))
+	return uint32(C.draco_point_cloud_num_points(pc.inner.ref))
 }
 
 func (pc *PointCloud) NumAttrs() int32 {
-	return int32(C.draco_point_cloud_num_attrs(pc.ref))
+	return int32(C.draco_point_cloud_num_attrs(pc.inner.ref))
 }
 
 func (pc *PointCloud) Attr(i int32) *PointAttr {
-	attr := C.draco_point_cloud_get_attribute(pc.ref, C.int32_t(i))
+	attr := C.draco_point_cloud_get_attribute(pc.inner.ref, C.int32_t(i))
 	if attr == nil {
 		return nil
 	}
@@ -42,7 +46,7 @@ func (pc *PointCloud) Attr(i int32) *PointAttr {
 }
 
 func (pc *PointCloud) AttrByUniqueID(id uint32) *PointAttr {
-	attr := C.draco_point_cloud_get_attribute_by_unique_id(pc.ref, C.uint32_t(id))
+	attr := C.draco_point_cloud_get_attribute_by_unique_id(pc.inner.ref, C.uint32_t(id))
 	if attr == nil {
 		return nil
 	}
@@ -50,7 +54,7 @@ func (pc *PointCloud) AttrByUniqueID(id uint32) *PointAttr {
 }
 
 func (pc *PointCloud) NamedAttributeID(gt GeometryAttrType) int32 {
-	return int32(C.draco_point_cloud_get_named_attribute_id(pc.ref, C.draco_geometry_attr_type(gt)))
+	return int32(C.draco_point_cloud_get_named_attribute_id(pc.inner.ref, C.draco_geometry_attr_type(gt)))
 }
 
 func (pc *PointCloud) AttrData(pa *PointAttr, buffer interface{}) (interface{}, bool) {
@@ -101,6 +105,6 @@ func (pc *PointCloud) AttrData(pa *PointAttr, buffer interface{}) (interface{}, 
 	}
 	size := C.size_t(n * dt.Size())
 	v := reflect.ValueOf(buffer)
-	ok := C.draco_point_cloud_get_attribute_data(pc.ref, pa.ref, C.draco_data_type(dt), size, unsafe.Pointer(v.Pointer()))
+	ok := C.draco_point_cloud_get_attribute_data(pc.inner.ref, pa.ref, C.draco_data_type(dt), size, unsafe.Pointer(v.Pointer()))
 	return buffer, bool(ok)
 }

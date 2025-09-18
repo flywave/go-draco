@@ -37,11 +37,11 @@ func NewDecoder() *Decoder {
 }
 
 func (d *Decoder) DecodeMesh(m *Mesh, data []byte) error {
-	s := C.draco_decoder_decode_mesh(d.ref, (*C.char)(unsafe.Pointer(&data[0])), C.size_t(len(data)), m.ref)
+	s := C.draco_decoder_decode_mesh(d.ref, (*C.char)(unsafe.Pointer(&data[0])), C.size_t(len(data)), m.inner.ref)
 	return newError(s)
 }
 
 func (d *Decoder) DecodePointCloud(pc *PointCloud, data []byte) error {
-	s := C.draco_decoder_decode_point_cloud(d.ref, (*C.char)(unsafe.Pointer(&data[0])), C.size_t(len(data)), pc.ref)
+	s := C.draco_decoder_decode_point_cloud(d.ref, (*C.char)(unsafe.Pointer(&data[0])), C.size_t(len(data)), pc.inner.ref)
 	return newError(s)
 }

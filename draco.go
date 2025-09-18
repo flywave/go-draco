@@ -103,9 +103,15 @@ func newError(s *C.struct__draco_status_t) error {
 		return nil
 	}
 	errLen := C.draco_status_error_msg_length(s)
+	if errLen == 0 {
+		return nil
+	}
 	errMsg := make([]C.char, errLen)
 	errMsgPtr := (*C.char)(unsafe.Pointer(&errMsg[0]))
-	C.draco_status_error_msg(s, errMsgPtr, errLen)
+	resultLen := C.draco_status_error_msg(s, errMsgPtr, errLen)
+	if resultLen == 0 {
+		return nil
+	}
 	return &Error{
 		Code:    int(C.draco_status_code(s)),
 		Message: C.GoStringN(errMsgPtr, C.int(errLen)-1),
